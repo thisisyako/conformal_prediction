@@ -45,7 +45,7 @@ def build_prep_pipeline(comorbidities_vars=None):
         remainder='passthrough'
     )
 
-    pipeline = Pipeline(step=[
+    pipeline = Pipeline(steps=[
         ('engineering', FeatureEngineer(cols_to_drop=cols_to_drop, comorbidity_cols=comorbidities_vars)),
         ('preprocessing', preprocessor)
     ])
