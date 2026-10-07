@@ -22,7 +22,7 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
         X_out = X_out.drop(columns=self.cols_to_drop)
         return X_out
 
-def build_prep_pipeline(comorbidities_vars=None):
+def build_prep_pipeline(comorbidities_vars=None, cols_to_drop=None):
     categorical_features = ['facid']
 
     numeric_features = ['hematocrit', 'neutrophils', 'sodium', 'glucose', 
@@ -35,8 +35,10 @@ def build_prep_pipeline(comorbidities_vars=None):
                     "substancedependence", "dialysisrenalendstage"] \
                         if comorbidities_vars is None else comorbidities_vars
 
-    cols_to_drop = ["eid", "gender", "discharged", "vdate"]
-
+    cols_to_drop_full = ["eid", "discharged", "vdate"]
+    if cols_to_drop is not None:
+        cols_to_drop_full += cols_to_drop
+ 
     preprocessor = ColumnTransformer(
         transformers=[
             ('cat', OneHotEncoder(drop='first', sparse_output=False), categorical_features),
@@ -46,7 +48,7 @@ def build_prep_pipeline(comorbidities_vars=None):
     )
 
     pipeline = Pipeline(steps=[
-        ('engineering', FeatureEngineer(cols_to_drop=cols_to_drop, comorbidity_cols=comorbidities_vars)),
+        ('engineering', FeatureEngineer(cols_to_drop=cols_to_drop_full, comorbidity_cols=comorbidities_vars)),
         ('preprocessing', preprocessor)
     ])
 
