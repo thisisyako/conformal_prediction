@@ -106,7 +106,7 @@ def normalized_conformal_prediction(grouped=False):
 
     y_mean = hgbr_mean.predict(X_test)
     plot_conformal_intervals(y_test, lo, hi, y_mean, num_samples=100)
-    plot_width_distribution(lo, hi)
+    plot_width_distribution(lo, hi, name=f"normalized_{ALPHA}")
 
     if grouped:
         evaluate_coverage_by_group(y_test, lo, hi, gender_test)
