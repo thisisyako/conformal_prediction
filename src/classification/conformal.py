@@ -1,7 +1,12 @@
+"""
+L'objectif est d'encadrer les prédictions d'un modèle de classification d'images
+de déchets (9 classes) avec une garantie statistique de couverture (ex: 95%).
+On prédit ainsi un ensemble de classes (prediction set) dont la taille varie selon l'incertitude du modèle.
+"""
+
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
 import torch
 import torch.nn as nn
 
@@ -27,10 +32,14 @@ CLASS_LABELS = [
 DATASET_NAME = "realwaste"
 
 
-# ------------ Score Function -------------- #
-
-
 def score(model, X, y):
+    """
+    Calcule le score de non-conformité (score d'étrangeté) pour un batch d'images.
+
+    - On trie les classes par probabilité décroissante.
+    - On cherche la position de la vraie classe (y[i]) dans ce tri.
+    - Le score est la somme des probabilités des classes qui sont plus probables que la vraie classe. Si le modèle a vu juste (position 0), le score est 0.
+    """
     with torch.no_grad():
         outputs = model(X)
         probs = nn.functional.softmax(outputs, dim=1).numpy()
@@ -43,6 +52,11 @@ def score(model, X, y):
 
 
 def calibration(model, cal_loader, alpha):
+    """
+    Calcule le seuil de quantile q_hat sur le jeu de calibration.
+
+    - On applique la correction d'échantillon fini pour garantir le taux de couverture (1 - alpha), par exemple 95% si alpha = 0.05.
+    """
     all_scores = []
     for images, labels in cal_loader:
         all_scores += score(model, images, labels)
@@ -53,6 +67,9 @@ def calibration(model, cal_loader, alpha):
 
 
 def test_conformal_prediction(model, cal_loader, test_loader, alpha):
+    """
+    Évalue la prédiction conforme sur le jeu de test en utilisant le q_hat calibré.
+    """
 
     model.eval()
     q_hat = calibration(model, cal_loader, alpha)
@@ -100,6 +117,9 @@ def test_conformal_prediction(model, cal_loader, test_loader, alpha):
 def plot_coverage_histogram(
     dataset_path, device, is_cuda, num_seeds=20, target_alpha=0.05
 ):
+    """
+    Répète l'entrainement et la prédiction conforme sur plusieurs splits aléatoires (multi-seed) pour vérifier la stabilité empirique du coverage.
+    """
 
     seeds = range(num_seeds)
     coverages = []
@@ -152,28 +172,16 @@ def plot_coverage_histogram(
 
 def evaluate_per_class_coverage(model, test_loader, q_hat, n_labels, device):
     """
-    Calculates empirical coverage, average prediction set size, and top hesitated
-    classes per target class.
+    Analyse par classe : calcule la couverture, la taille moyenne des sets, et identifie les confusions (top hesitated classes).
 
-    Args:
-        model: PyTorch model evaluated in eval mode.
-        test_loader: DataLoader containing test dataset.
-        q_hat (float): Quantile threshold obtained during calibration.
-        n_labels (int): Total number of unique target classes.
-        device (str or torch.device): Device to run tensor operations.
-        class_names (list, optional): List of human-readable class names for printing.
-
-    Returns:
-        dict: Summary containing overall statistics and per-class metrics.
+    - Permet de voir si certaines catégories de déchets (ex: plastique vs métal) posent plus de problèmes d'incertidude au modèle.
     """
     model.eval()
 
-    # Store metrics per class
     class_total = defaultdict(int)
     class_coverage = defaultdict(int)
     class_set_size = defaultdict(list)
 
-    # Track which other classes appear in the prediction set when the true label is cls
     class_hesitations = defaultdict(lambda: defaultdict(int))
 
     with torch.no_grad():
@@ -187,7 +195,6 @@ def evaluate_per_class_coverage(model, test_loader, q_hat, n_labels, device):
                 probs = probs_batch[i]
                 true_label = labels_np[i]
 
-                # Construct prediction set using adaptive cumulative probability cutoff (APS)
                 order = np.argsort(probs)[::-1]
                 pred_set = []
                 cum = 0.0
@@ -198,18 +205,15 @@ def evaluate_per_class_coverage(model, test_loader, q_hat, n_labels, device):
                     pred_set.append(idx)
                     cum += probs[idx]
 
-                # Update class-specific tracking
                 class_total[true_label] += 1
                 class_set_size[true_label].append(len(pred_set))
                 if true_label in pred_set:
                     class_coverage[true_label] += 1
 
-                # Track hesitation: other classes included in the prediction set alongside true_label
                 for pred_idx in pred_set:
                     if pred_idx != true_label:
                         class_hesitations[true_label][pred_idx] += 1
 
-    # Format per-class results
     results = {}
     header_title = "Class Name"
     print(
@@ -225,7 +229,6 @@ def evaluate_per_class_coverage(model, test_loader, q_hat, n_labels, device):
             cov = 100.0 * class_coverage[cls] / total
             avg_size = np.mean(class_set_size[cls])
 
-            # Get top 2 hesitated classes (most frequent co-occurrences in prediction sets)
             sorted_hesitations = sorted(
                 class_hesitations[cls].items(), key=lambda x: x[1], reverse=True
             )[:2]
