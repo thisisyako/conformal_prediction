@@ -11,18 +11,35 @@ The objective is to provide guaranteed prediction intervals, expressed in full d
 - Conformal Quantile Regression (CQR): Baseline approach using quantile regression.
 - Normalized Conformal Prediction (SCP): A two-stage (Locally Scaled) modeling approach to adapt the interval width to the clinical complexity of each patient and handle the discrete nature of count data.
 
-2. Ordinal Classification: # TODO
+2. Ordinal Classification: Classification of Waste Images
+The objective is to provide guaranteed coverage of the possible classes:
+- Cardboard
+- Food Organics
+- Glass
+- Metal
+- Paper
+- Plastic
+- Miscellaneous Trash
+- Textile Trash
+- Vegetation
+We used APS (Adaptative Prediction Sets) for the score function of our conformal prediction.
 
 ## Project Structure
 
-* `data/`: Contains raw/processed datasets, serialized models (.joblib), and output plots.
+* `data/`: Contains raw/processed datasets (just for lengthofstay, realwaste is too big), serialized models (.joblib/.pt), and output plots.
 * `src/`: Reusable core modules.
   * `preprocessing.py`: Data cleaning and transformation.
   * `models.py`: Machine Learning algorithm definition and training.
   * `conformal_regression.py`: Implementation of calibration algorithms for regression.
   * `evaluation.py`: Calculation of coverage metrics and fairness auditing.
   * `visualization.py`: Generation of analytical plots.
+  * `classification/`: Classification library.
+    * `data.py`: Train test split and Data augmentation.
+    * `models.py`: Loading of the model and freezing of weights.
+    * `train.py`: Training and Fine-tuning of the model
+    * `conformal.py`: Methods of conformal prediction and plots
 * `notebooks/`: Experiments and initial data exploration.
+    * `waste_classification.ipynb`: Main notebook for training and experimentation for the waste classification.
 * `main_regression.py`: Entry point for executing the regression pipeline.
 * `main_classification.py`: Entry point for executing the classification pipeline.
 
@@ -55,6 +72,7 @@ python main_regression.py --method cqr
 ```
 
 To run the classification pipeline:
+
 ```bash
 # TODO
 ```
