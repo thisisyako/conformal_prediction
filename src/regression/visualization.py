@@ -44,7 +44,7 @@ def plot_conformal_intervals(y_test, y_pred_lo, y_pred_hi, y_pred_mean, num_samp
     plt.savefig(plot_dir / "conformal_intervals_sample.png", dpi=300)
     plt.show()
 
-def plot_width_distribution(y_pred_lo, y_pred_hi):
+def plot_width_distribution(y_pred_lo, y_pred_hi, name=""):
     """
     Affiche la distribution des largeurs d'intervalles.
     """
@@ -59,7 +59,7 @@ def plot_width_distribution(y_pred_lo, y_pred_hi):
     plt.grid(True, axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
     
-    plt.savefig(plot_dir / "interval_widths_distribution.png", dpi=300)
+    plt.savefig(plot_dir / f"{name}_interval_widths_distribution.png", dpi=300)
     plt.show()
 
 def plot_group_fairness(y_test, y_pred_lo, y_pred_hi, sensitive_feature):

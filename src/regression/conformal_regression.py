@@ -10,9 +10,6 @@ def regression_conformity_score(f_xi, y_calib):
 
 def calibrate_cqr(y_cal_lo, y_cal_hi, y_calib, alpha):
     cal_score_set = get_cqr_confirmity_score_set(y_cal_lo, y_cal_hi, y_calib)
-    print(cal_score_set.shape)
-    plt.hist(cal_score_set)
-    plt.show()
     n = len(y_calib)
 
     # On prend le quantile qu'on veut

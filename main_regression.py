@@ -4,11 +4,11 @@ import numpy as np
 
 from pathlib import Path
 
-from src.conformal_regression import calibrate_cqr, calibrate_scp, predict_normalized
-from src.data_loader import create_data
-from src.evaluation import evaluate_predictions, evaluate_coverage_by_group
-from src.models import train_quantile_regressor, train_hgbr, get_or_train_qr, save_model
-from src.visualization import plot_conformal_intervals, plot_width_distribution, plot_group_fairness
+from src.regression.conformal_regression import calibrate_cqr, calibrate_scp, predict_normalized
+from src.regression.data_loader import create_data
+from src.regression.evaluation import evaluate_predictions, evaluate_coverage_by_group
+from src.regression.models import train_quantile_regressor, train_hgbr, get_or_train_qr, save_model
+from src.regression.visualization import plot_conformal_intervals, plot_width_distribution, plot_group_fairness
 
 ALPHA = 0.1
 
@@ -46,6 +46,9 @@ def cqr(grouped=False):
         alpha=ALPHA,
         step_name="1. Base Quantile Regression"
     )
+    
+    plot_width_distribution(y_pred_lo_base, y_pred_hi_base, "QR")
+
     # la LOS est majoritairement entre 1 et 4 jours donc l'objectif va être de réduire la largeur moyenne avec la CQR.
 
     # ---------------------------------------

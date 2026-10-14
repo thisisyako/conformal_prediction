@@ -44,7 +44,7 @@ def train_quantile_regressor(X, y, quantile=0.5):
 
 
 def train_hgbr(X, y):
-    model = HistGradientBoostingRegressor(loss="poisson")
+    model = HistGradientBoostingRegressor()
 
     print("Training HGB Regressor...")
     model.fit(X, y)
