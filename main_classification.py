@@ -123,7 +123,7 @@ def main():
 
     elif args.mode == "per_class":
         print("--- Starting Per-Class Coverage Analysis ---")
-        per_class_coverage(dataset_path)
+        per_class_coverage(dataset_path, args.model_path, args.alpha, args.seed)
 
     elif args.mode == "plot_histogram":
         print("--- Generating Multi-Seed Coverage Histogram ---")

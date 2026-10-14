@@ -262,12 +262,9 @@ def evaluate_per_class_coverage(model, test_loader, q_hat, n_labels, device):
     return results
 
 
-def per_class_coverage(dataset_path):
+def per_class_coverage(dataset_path, model_path, target_alpha, seed):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     is_cuda = device.type == "cuda"
-
-    seed = 42
-    target_alpha = 0.05
 
     train_path, cal_path, test_path = split_dataset(dataset_path, seed=seed)
 
@@ -275,7 +272,6 @@ def per_class_coverage(dataset_path):
         train_path, cal_path, test_path, is_cuda
     )
 
-    model_path = Path("../data/models/mobilenet_v3_realwaste_stage2.pt")
     model = load_model(device)
     model.load_state_dict(torch.load(model_path))
 
