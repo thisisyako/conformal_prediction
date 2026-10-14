@@ -59,7 +59,7 @@ def test_conformal_prediction(model, cal_loader, test_loader, alpha):
 
     total_predicted = 0
     coverage_correct = 0
-    total_set_size = 0
+    set_sizes = []
 
     with torch.no_grad():
         for images, labels in test_loader:
@@ -81,14 +81,18 @@ def test_conformal_prediction(model, cal_loader, test_loader, alpha):
                 true_label = labels[i]
 
                 total_predicted += 1
-                total_set_size += len(pred_set)
+                set_sizes.append(len(pred_set))
                 if true_label in pred_set:
                     coverage_correct += 1
+    set_sizes = np.array(set_sizes)
     final_coverage = 100.0 * coverage_correct / total_predicted
-    average_set_size = total_set_size / total_predicted
+    average_set_size = np.mean(set_sizes)
 
     print(f"Final Coverage: {final_coverage:.2f}%")
-    print(f"Final Average Set Size: {average_set_size:.2f}")
+    print(f"Mean Set Size: {average_set_size:.2f}")
+    print(f"Median Set Size: {np.median(set_sizes):.2f}")
+    print(f"Min Set Size: {np.min(set_sizes):.2f}")
+    print(f"Max Set Size: {np.max(set_sizes):.2f}")
     print(f"Quantile q_hat: {q_hat:.4f}")
     return final_coverage, average_set_size, q_hat
 
